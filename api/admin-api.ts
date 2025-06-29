@@ -63,6 +63,6 @@ export const adminApi = {
   },
 
   deleteMusic: async (musicId: string): Promise<void> => {
-    await api.delete(`/admin/music/${musicId}`);
+    await api.delete(`/admin/musics/${musicId}`);
   },
 };

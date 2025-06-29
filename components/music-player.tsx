@@ -110,7 +110,7 @@ export function MusicPlayer({
                 max={duration || 100}
                 step={1}
                 onValueChange={handleSeek}
-                className="flex-1"
+                className="flex-1 bg-gray-400"
               />
               <span className="text-xs text-muted-foreground w-10">
                 {formatTime(duration)}
