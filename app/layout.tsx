@@ -20,7 +20,7 @@ export default function RootLayout({
       </head>
       <body className={"min-h-screen bg-background antialiased"}>
         {children}
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

@@ -6,13 +6,15 @@ import { MusicCard } from "@/components/music-card";
 import { MusicPlayer } from "@/components/music-player";
 import { MoodButton } from "@/components/mood-button";
 import { useMusicPlayer } from "@/hooks/use-music-player";
-import api from "@/lib/api";
+import { useAuthStore } from "@/store/auth-store";
 import type { Music, MusicByMood } from "@/types/music";
+import axiosInstance from "@/lib/api";
 
 export default function HomePage() {
   const [musicData, setMusicData] = useState<MusicByMood>({});
   const [allMusic, setAllMusic] = useState<Music[]>([]);
   const [loading, setLoading] = useState(true);
+  const { initializeAuth } = useAuthStore();
 
   const {
     currentMusic,
@@ -29,68 +31,38 @@ export default function HomePage() {
   } = useMusicPlayer();
 
   useEffect(() => {
+    initializeAuth();
     fetchMusic();
   }, []);
 
   const fetchMusic = async () => {
     try {
-      const response = await api.get("/music/");
-      setMusicData(response.data);
+      const { data } = await axiosInstance.get("/public/musics");
+      setMusicData(data.data);
 
       // Flatten all music into a single array
-      const flattenedMusic = Object.values(response.data).flat();
+      const flattenedMusic = Object.values(data.data).flat();
       setAllMusic(flattenedMusic as any);
     } catch (error) {
       console.error("Error fetching music:", error);
-      // Mock data for development
-      const mockData: MusicByMood = {
-        happy: [
-          {
-            id: "1",
-            title: "Sunshine Vibes",
-            audioUrl: "/placeholder.svg?height=400&width=400",
-            imageUrl: "/placeholder.svg?height=400&width=400",
-            artists: ["Happy Artist", "Sunshine Band"],
-          },
-          {
-            id: "2",
-            title: "Good Times",
-            audioUrl: "/placeholder.svg?height=400&width=400",
-            imageUrl: "/placeholder.svg?height=400&width=400",
-            artists: ["Feel Good Inc"],
-          },
-        ],
-        sad: [
-          {
-            id: "3",
-            title: "Melancholy Blues",
-            audioUrl: "/placeholder.svg?height=400&width=400",
-            imageUrl: "/placeholder.svg?height=400&width=400",
-            artists: ["Blue Artist"],
-          },
-        ],
-        energetic: [
-          {
-            id: "4",
-            title: "Power Up",
-            audioUrl: "/placeholder.svg?height=400&width=400",
-            imageUrl: "/placeholder.svg?height=400&width=400",
-            artists: ["Energy Band", "Power Duo"],
-          },
-        ],
-      };
-      setMusicData(mockData);
-      setAllMusic(Object.values(mockData).flat());
+      setMusicData({});
+      setAllMusic([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handlePlayMusic = (music: Music) => {
-    if (currentMusic?.id === music.id) {
+    if (currentMusic?._id === music._id) {
       togglePlay();
     } else {
       playMusic(music, allMusic);
+    }
+  };
+
+  const handleMoodDetected = (moodMusic: Music[]) => {
+    if (moodMusic.length > 0) {
+      playMusic(moodMusic[0], moodMusic);
     }
   };
 
@@ -124,10 +96,10 @@ export default function HomePage() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {musicList.map((music) => (
                   <MusicCard
-                    key={music.id}
+                    key={music._id}
                     music={music}
                     isPlaying={isPlaying}
-                    isCurrentMusic={currentMusic?.id === music.id}
+                    isCurrentMusic={currentMusic?._id === music._id}
                     onPlay={() => handlePlayMusic(music)}
                   />
                 ))}
@@ -147,10 +119,10 @@ export default function HomePage() {
         onTogglePlay={togglePlay}
         onNext={playNext}
         onPrevious={playPrevious}
-        audioRef={audioRef}
+        audioRef={audioRef as any}
       />
 
-      <MoodButton />
+      <MoodButton onMusicDetected={handleMoodDetected} />
     </div>
   );
 }

@@ -18,7 +18,7 @@ interface MusicPlayerProps {
   onTogglePlay: () => void;
   onNext: () => void;
   onPrevious: () => void;
-  audioRef: React.RefObject<HTMLAudioElement | null>;
+  audioRef: React.RefObject<HTMLAudioElement>;
 }
 
 export function MusicPlayer({
